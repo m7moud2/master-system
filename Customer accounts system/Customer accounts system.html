@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حسابات العملاء - ملف إكسل تفاعلي</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            background: white;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 12px 8px;
+            text-align: center;
+            position: relative;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #495057, #6c757d);
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #e3f2fd;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        
+        .total-row {
+            background: linear-gradient(135deg, #28a745, #20c997) !important;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .total-row:hover {
+            background: linear-gradient(135deg, #218838, #1ea080) !important;
+        }
+        
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0,123,255,0.3);
+        }
+        
+        .status-cell {
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+        
+        .status-paid {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-partial {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-unpaid {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .summary-card h3 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .summary-card .value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .close {
+            color: #aaa;
+            float: left;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
+        
+        .commission-cell {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .net-paid-cell {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 نظام حسابات العملاء</h1>
+            <p>إدارة شاملة لحسابات العملاء مع طرق الدفع والعمولات</p>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-success" onclick="addWorker()">➕ إضافة عميل جديد</button>
+            <button class="btn btn-primary" onclick="exportToExcel()">📥 تصدير إكسل</button>
+            <button class="btn btn-danger" onclick="clearAll()">🗑️ مسح الكل</button>
+            <button class="btn btn-primary" onclick="printReport()">🖨️ طباعة</button>
+        </div>
+        
+        <div class="summary-cards">
+            <div class="summary-card">
+                <h3>إجمالي العملاء</h3>
+                <div class="value" id="totalWorkers">6</div>
+            </div>
+            <div class="summary-card">
+                <h3>إجمالي التقارير</h3>
+                <div class="value" id="totalReports">23</div>
+            </div>
+            <div class="summary-card">
+                <h3>إجمالي الحساب</h3>
+                <div class="value" id="totalAmount">21,100 جنيه</div>
+            </div>
+            <div class="summary-card">
+                <h3>إجمالي المدفوع</h3>
+                <div class="value" id="totalPaid">15,900 جنيه</div>
+            </div>
+            <div class="summary-card">
+                <h3>إجمالي العمولة</h3>
+                <div class="value" id="totalCommission">34 جنيه</div>
+            </div>
+            <div class="summary-card">
+                <h3>صافي المدفوع</h3>
+                <div class="value" id="totalNetPaid">15,866 جنيه</div>
+            </div>
+            <div class="summary-card">
+                <h3>إجمالي المتبقي</h3>
+                <div class="value" id="totalRemaining">5,234 جنيه</div>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table id="workersTable">
+                <thead>
+                    <tr>
+                        <th>اسم العميل</th>
+                        <th>عدد التقارير</th>
+                        <th>سعر التقرير (جنيه)</th>
+                        <th>إجمالي الحساب (جنيه)</th>
+                        <th>المبلغ المدفوع (جنيه)</th>
+                        <th>طريقة الدفع</th>
+                        <th>عمولة السحب (جنيه)</th>
+                        <th>صافي المدفوع (جنيه)</th>
+                        <th>المتبقي (جنيه)</th>
+                        <th>حالة الدفع</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="workersTableBody">
+                    <!-- البيانات ستتم إضافتها هنا -->
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td><strong>الإجمالي</strong></td>
+                        <td id="totalReportsFooter"><strong>23</strong></td>
+                        <td>-</td>
+                        <td id="totalAmountFooter"><strong>21,100</strong></td>
+                        <td id="totalPaidFooter"><strong>15,900</strong></td>
+                        <td>-</td>
+                        <td id="totalCommissionFooter"><strong>34</strong></td>
+                        <td id="totalNetPaidFooter"><strong>15,866</strong></td>
+                        <td id="totalRemainingFooter"><strong>5,234</strong></td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Modal لإضافة عميل جديد -->
+    <div id="workerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>إضافة عميل جديد</h2>
+            <form id="workerForm" style="margin-top: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <label>اسم العميل:</label>
+                    <input type="text" id="workerName" required style="margin-top: 5px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>عدد التقارير:</label>
+                    <input type="number" id="reportCount" min="0" required style="margin-top: 5px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>سعر التقرير (جنيه):</label>
+                    <input type="number" id="reportPrice" min="0" required style="margin-top: 5px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>المبلغ المدفوع (جنيه):</label>
+                    <input type="number" id="paidAmount" min="0" value="0" style="margin-top: 5px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>طريقة الدفع:</label>
+                    <select id="paymentMethod" style="margin-top: 5px;">
+                        <option value="نقدي">نقدي</option>
+                        <option value="انستاباي">انستاباي</option>
+                        <option value="فودافون كاش">فودافون كاش</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">إضافة العميل</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // بيانات العملاء الأساسية
+        let workers = [
+            {name: "محمد نصر البحيره", reports: 12, price: 1450, paid: 14500, paymentMethod: "نقدي"},
+            {name: "علاء دسوق", reports: 3, price: 1500, paid: 0, paymentMethod: "نقدي"},
+            {name: "د/اسامه المنياء", reports: 1, price: 1500, paid: 0, paymentMethod: "نقدي"},
+            {name: "محمود حسين", reports: 2, price: 1600, paid: 3200, paymentMethod: "انستاباي"},
+            {name: "صلاح ويسيم", reports: 5, price: 1400, paid: 0, paymentMethod: "نقدي"},
+            {name: "نبي دسوق", reports: 2, price: 1700, paid: 3400, paymentMethod: "فودافون كاش"}
+        ];
+
+        // حساب البيانات المشتقة
+        function calculateDerivedData(worker) {
+            worker.total = worker.reports * worker.price;
+            
+            // حساب عمولة السحب (1% لفودافون كاش فقط)
+            worker.commission = worker.paymentMethod === "فودافون كاش" ? Math.round(worker.paid * 0.01) : 0;
+            
+            // صافي المدفوع (المدفوع - العمولة)
+            worker.netPaid = worker.paid - worker.commission;
+            
+            // المتبقي (الإجمالي - صافي المدفوع)
+            worker.remaining = worker.total - worker.netPaid;
+            
+            worker.status = worker.remaining === 0 ? 'مدفوع' : 
+                           worker.netPaid > 0 ? 'جزئي' : 'لم يدفع';
+            return worker;
+        }
+
+        // عرض البيانات في الجدول
+        function displayWorkers() {
+            const tbody = document.getElementById('workersTableBody');
+            tbody.innerHTML = '';
+            
+            workers.forEach((worker, index) => {
+                calculateDerivedData(worker);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="text" value="${worker.name}" onchange="updateWorker(${index}, 'name', this.value)"></td>
+                    <td><input type="number" value="${worker.reports}" min="0" onchange="updateWorker(${index}, 'reports', parseInt(this.value) || 0)"></td>
+                    <td><input type="number" value="${worker.price}" min="0" onchange="updateWorker(${index}, 'price', parseInt(this.value) || 0)"></td>
+                    <td><strong>${worker.total.toLocaleString()}</strong></td>
+                    <td><input type="number" value="${worker.paid}" min="0" onchange="updateWorker(${index}, 'paid', parseInt(this.value) || 0)"></td>
+                    <td>
+                        <select onchange="updateWorker(${index}, 'paymentMethod', this.value)">
+                            <option value="نقدي" ${worker.paymentMethod === 'نقدي' ? 'selected' : ''}>نقدي</option>
+                            <option value="انستاباي" ${worker.paymentMethod === 'انستاباي' ? 'selected' : ''}>انستاباي</option>
+                            <option value="فودافون كاش" ${worker.paymentMethod === 'فودافون كاش' ? 'selected' : ''}>فودافون كاش</option>
+                        </select>
+                    </td>
+                    <td class="commission-cell">${worker.commission.toLocaleString()}</td>
+                    <td class="net-paid-cell">${worker.netPaid.toLocaleString()}</td>
+                    <td><strong>${worker.remaining.toLocaleString()}</strong></td>
+                    <td><span class="status-cell status-${worker.status === 'مدفوع' ? 'paid' : worker.status === 'جزئي' ? 'partial' : 'unpaid'}">${worker.status}</span></td>
+                    <td><button class="btn btn-danger" onclick="removeWorker(${index})">حذف</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            updateSummary();
+        }
+
+        // تحديث بيانات عميل
+        function updateWorker(index, field, value) {
+            workers[index][field] = value;
+            displayWorkers();
+        }
+
+        // حذف عميل
+        function removeWorker(index) {
+            if (confirm('هل أنت متأكد من حذف هذا العميل؟')) {
+                workers.splice(index, 1);
+                displayWorkers();
+            }
+        }
+
+        // تحديث الملخص
+        function updateSummary() {
+            const totalWorkers = workers.length;
+            const totalReports = workers.reduce((sum, worker) => sum + worker.reports, 0);
+            const totalAmount = workers.reduce((sum, worker) => sum + worker.total, 0);
+            const totalPaid = workers.reduce((sum, worker) => sum + worker.paid, 0);
+            const totalCommission = workers.reduce((sum, worker) => sum + worker.commission, 0);
+            const totalNetPaid = workers.reduce((sum, worker) => sum + worker.netPaid, 0);
+            const totalRemaining = totalAmount - totalNetPaid;
+
+            // تحديث الكروت
+            document.getElementById('totalWorkers').textContent = totalWorkers;
+            document.getElementById('totalReports').textContent = totalReports;
+            document.getElementById('totalAmount').textContent = totalAmount.toLocaleString() + ' جنيه';
+            document.getElementById('totalPaid').textContent = totalPaid.toLocaleString() + ' جنيه';
+            document.getElementById('totalCommission').textContent = totalCommission.toLocaleString() + ' جنيه';
+            document.getElementById('totalNetPaid').textContent = totalNetPaid.toLocaleString() + ' جنيه';
+            document.getElementById('totalRemaining').textContent = totalRemaining.toLocaleString() + ' جنيه';
+
+            // تحديث الفوتر
+            document.getElementById('totalReportsFooter').innerHTML = `<strong>${totalReports}</strong>`;
+            document.getElementById('totalAmountFooter').innerHTML = `<strong>${totalAmount.toLocaleString()}</strong>`;
+            document.getElementById('totalPaidFooter').innerHTML = `<strong>${totalPaid.toLocaleString()}</strong>`;
+            document.getElementById('totalCommissionFooter').innerHTML = `<strong>${totalCommission.toLocaleString()}</strong>`;
+            document.getElementById('totalNetPaidFooter').innerHTML = `<strong>${totalNetPaid.toLocaleString()}</strong>`;
+            document.getElementById('totalRemainingFooter').innerHTML = `<strong>${totalRemaining.toLocaleString()}</strong>`;
+        }
+
+        // إضافة عميل جديد
+        function addWorker() {
+            document.getElementById('workerModal').style.display = 'block';
+        }
+
+        // إغلاق النافذة المنبثقة
+        function closeModal() {
+            document.getElementById('workerModal').style.display = 'none';
+            document.getElementById('workerForm').reset();
+        }
+
+        // معالجة إضافة عميل جديد
+        document.getElementById('workerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newWorker = {
+                name: document.getElementById('workerName').value,
+                reports: parseInt(document.getElementById('reportCount').value) || 0,
+                price: parseInt(document.getElementById('reportPrice').value) || 0,
+                paid: parseInt(document.getElementById('paidAmount').value) || 0,
+                paymentMethod: document.getElementById('paymentMethod').value
+            };
+            
+            workers.push(newWorker);
+            displayWorkers();
+            closeModal();
+        });
+
+        // تصدير إلى إكسل
+        function exportToExcel() {
+            let csvContent = "اسم العميل,عدد التقارير,سعر التقرير,إجمالي الحساب,المبلغ المدفوع,طريقة الدفع,عمولة السحب,صافي المدفوع,المتبقي,حالة الدفع\n";
+            
+            workers.forEach(worker => {
+                calculateDerivedData(worker);
+                csvContent += `${worker.name},${worker.reports},${worker.price},${worker.total},${worker.paid},${worker.paymentMethod},${worker.commission},${worker.netPaid},${worker.remaining},${worker.status}\n`;
+            });
+
+            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "حسابات_العملاء_مع_طرق_الدفع.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // مسح جميع البيانات
+        function clearAll() {
+            if (confirm('هل أنت متأكد من مسح جميع البيانات؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+                workers = [];
+                displayWorkers();
+            }
+        }
+
+        // طباعة التقرير
+        function printReport() {
+            window.print();
+        }
+
+        // إغلاق النافذة المنبثقة عند النقر خارجها
+        window.onclick = function(event) {
+            const modal = document.getElementById('workerModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // تحميل البيانات عند بدء الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            displayWorkers();
+        });
+
+        // إضافة تأثيرات صوتية وبصرية للتفاعل
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn')) {
+                e.target.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    e.target.style.transform = '';
+                }, 150);
+            }
+        });
+    </script>
+</body>
+</html>
